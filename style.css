@@ -46,6 +46,10 @@ h2 { font-size: 15px; color: var(--text-muted); text-transform: uppercase; lette
   padding: 20px;
 }
 
+.auth-screen[hidden] {
+  display: none;
+}
+
 .auth-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -338,6 +342,15 @@ button { font-family: inherit; }
 .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
 
 .full-width { width: 100%; }
+
+.section-save-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
 
 .save-row {
   display: flex;

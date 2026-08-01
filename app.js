@@ -44,8 +44,8 @@ const nextDayBtn = document.getElementById("next-day");
 const todayBtn = document.getElementById("today-btn");
 const entryStatus = document.getElementById("entry-status");
 
-const saveBtn = document.getElementById("save-btn");
-const saveStatus = document.getElementById("save-status");
+// Every card has its own "Save section" button + status text next to it.
+const sectionSaveButtons = document.querySelectorAll(".section-save-btn");
 
 const exportStartInput = document.getElementById("export-start");
 const exportEndInput = document.getElementById("export-end");
@@ -54,6 +54,7 @@ const exportStatus = document.getElementById("export-status");
 
 // Slider fields need special handling (see NOTE below), so list them once here.
 const SLIDER_FIELDS = [
+  "sleep_hours",
   "workout_strain",
   "work_hours",
   "school_hours",
@@ -204,7 +205,7 @@ async function loadEntryForDate(dateStr) {
     resetForm();
     entryStatus.textContent = `No entry yet for ${formatDateLong(dateStr)} — fill in whatever you have`;
   }
-  saveStatus.textContent = "";
+  document.querySelectorAll(".section-save-status").forEach((el) => (el.textContent = ""));
 }
 
 // ---------------------------------------------------------------------------
@@ -269,7 +270,6 @@ function collectFormData() {
   };
 
   // Pill groups
-  row.sleep_hours = getPillValue("sleep_hours", parseInt);
   row.sleep_quality = getPillValue("sleep_quality", parseInt);
   row.rehab_done = getPillValue("rehab_done", (v) => v === "true");
 
@@ -317,7 +317,6 @@ function emptyToNull(value, transform) {
 // Populate the form from a saved row, and reset it to blank
 // ---------------------------------------------------------------------------
 function populateForm(data) {
-  setPillValue("sleep_hours", data.sleep_hours);
   setPillValue("sleep_quality", data.sleep_quality);
   setPillValue("rehab_done", data.rehab_done === null ? null : String(data.rehab_done));
 
@@ -388,10 +387,25 @@ function setRadioValue(field, value) {
 
 // ---------------------------------------------------------------------------
 // Save (upsert: insert a new row, or update the existing one for this date)
+//
+// Every "Save section" button calls this same function. It always saves the
+// *whole* form, not just the fields in that one card — that's what "upsert"
+// needs: if it only sent the fields from one section, the other columns
+// would be missing from the request and (depending on how the save is
+// written) could wipe out values you already saved earlier for this date.
+// Sending the whole form every time keeps every section's data intact no
+// matter which button you clicked. The per-section buttons are really just
+// a convenience so you don't have to scroll to the bottom to save.
 // ---------------------------------------------------------------------------
-saveBtn.addEventListener("click", async () => {
-  saveBtn.disabled = true;
-  saveStatus.textContent = "Saving…";
+sectionSaveButtons.forEach((btn) => {
+  btn.addEventListener("click", () => saveEntry(btn));
+});
+
+async function saveEntry(triggerBtn) {
+  const statusEl = triggerBtn.parentElement.querySelector(".section-save-status");
+
+  triggerBtn.disabled = true;
+  if (statusEl) statusEl.textContent = "Saving…";
 
   const row = collectFormData();
 
@@ -399,20 +413,21 @@ saveBtn.addEventListener("click", async () => {
     .from(TABLE)
     .upsert(row, { onConflict: "user_id,entry_date" });
 
-  saveBtn.disabled = false;
+  triggerBtn.disabled = false;
 
   if (error) {
-    saveStatus.textContent = "Couldn't save: " + error.message;
+    if (statusEl) statusEl.textContent = "Couldn't save: " + error.message;
     return;
   }
 
   const now = new Date();
-  saveStatus.textContent = `Saved ✓ at ${now.toLocaleTimeString(undefined, {
+  const savedText = `Saved ✓ at ${now.toLocaleTimeString(undefined, {
     hour: "2-digit",
     minute: "2-digit",
   })}`;
+  if (statusEl) statusEl.textContent = savedText;
   entryStatus.textContent = `Editing your saved entry for ${formatDateLong(currentDate)}`;
-});
+}
 
 // ---------------------------------------------------------------------------
 // CSV export for a date range

@@ -52,14 +52,8 @@
       <h2>Sleep &amp; nutrition</h2>
 
       <div class="field">
-        <label>Sleep hours</label>
-        <div class="pill-group" data-field="sleep_hours">
-          <button type="button" class="pill" data-value="6">6h</button>
-          <button type="button" class="pill" data-value="7">7h</button>
-          <button type="button" class="pill" data-value="8">8h</button>
-          <button type="button" class="pill" data-value="9">9h</button>
-          <button type="button" class="pill" data-value="10">10h</button>
-        </div>
+        <label>Sleep hours <span class="slider-value" id="sleep_hours-value">–</span></label>
+        <input type="range" class="slider" id="sleep_hours-slider" data-field="sleep_hours" min="6" max="12" step="0.5" value="0" />
       </div>
 
       <div class="field">
@@ -87,6 +81,11 @@
           <div class="radio-row" data-value="big_unhealthy" tabindex="0"><span class="dot"></span>Big unhealthy meal</div>
           <div class="radio-row" data-value="multiple_unhealthy" tabindex="0"><span class="dot"></span>Multiple unhealthy meals</div>
         </div>
+      </div>
+
+      <div class="section-save-row">
+        <button type="button" class="btn-secondary section-save-btn">Save section</button>
+        <span class="section-save-status muted small"></span>
       </div>
     </section>
 
@@ -140,6 +139,11 @@
           <div class="radio-row" data-value="same" tabindex="0"><span class="dot"></span>Same</div>
         </div>
       </div>
+
+      <div class="section-save-row">
+        <button type="button" class="btn-secondary section-save-btn">Save section</button>
+        <span class="section-save-status muted small"></span>
+      </div>
     </section>
 
     <!-- Activity & workout -->
@@ -166,6 +170,10 @@
         <input type="range" class="slider" id="school_hours-slider" data-field="school_hours" min="0" max="12" step="0.5" value="0" />
       </div>
 
+      <div class="section-save-row">
+        <button type="button" class="btn-secondary section-save-btn">Save section</button>
+        <span class="section-save-status muted small"></span>
+      </div>
     </section>
 
     <!-- Overall wellbeing -->
@@ -185,6 +193,11 @@
       <div class="field">
         <label>Mood during the day <span class="slider-value" id="mood_during_day-value">–</span></label>
         <input type="range" class="slider" id="mood_during_day-slider" data-field="mood_during_day" min="0" max="10" step="1" value="0" />
+      </div>
+
+      <div class="section-save-row">
+        <button type="button" class="btn-secondary section-save-btn">Save section</button>
+        <span class="section-save-status muted small"></span>
       </div>
     </section>
 
@@ -206,12 +219,12 @@
         <label for="other-pain-input">Other injuries / pain</label>
         <textarea id="other-pain-input" rows="2"></textarea>
       </div>
-    </section>
 
-    <div class="save-row">
-      <button id="save-btn" class="btn-primary">Save entry</button>
-      <p id="save-status" class="muted small"></p>
-    </div>
+      <div class="section-save-row">
+        <button type="button" class="btn-secondary section-save-btn">Save section</button>
+        <span class="section-save-status muted small"></span>
+      </div>
+    </section>
 
     <!-- Export -->
     <section class="card">

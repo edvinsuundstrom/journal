@@ -60,6 +60,9 @@ const SLIDER_FIELDS = [
   "sitting_hours",
   "hamstring_pain",
   "wrist_pain",
+  "overall_physical_status",
+  "overall_stress",
+  "mood_during_day",
 ];
 
 // ---------------------------------------------------------------------------
@@ -436,6 +439,9 @@ const CSV_COLUMNS = [
   ["hamstring_pain", "Hamstring pain"],
   ["wrist_pain", "Wrist pain"],
   ["other_pain", "Other injuries/pain"],
+  ["overall_physical_status", "Overall physical status"],
+  ["overall_stress", "Overall stress"],
+  ["mood_during_day", "Mood during the day"],
 ];
 
 exportBtn.addEventListener("click", async () => {

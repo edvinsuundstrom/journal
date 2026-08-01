@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Recovery Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ===================== LOGIN VIEW ===================== -->
+<div id="login-view" class="auth-screen">
+  <div class="auth-card">
+    <h1>Recovery Journal</h1>
+    <p class="muted">Sign in to continue</p>
+    <form id="login-form" novalidate>
+      <label for="login-email">Email</label>
+      <input type="email" id="login-email" required autocomplete="username" />
+
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" required autocomplete="current-password" />
+
+      <button type="submit" class="btn-primary full-width">Sign in</button>
+      <p id="login-error" class="error-text" hidden></p>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== APP VIEW ===================== -->
+<div id="app-view" class="app" hidden>
+  <header class="app-header">
+    <div class="header-top">
+      <h1>Recovery Journal</h1>
+      <button id="logout-btn" class="btn-text">Sign out</button>
+    </div>
+
+    <div class="date-nav">
+      <button id="prev-day" class="btn-icon" aria-label="Previous day">‹</button>
+      <input type="date" id="date-input" />
+      <button id="next-day" class="btn-icon" aria-label="Next day">›</button>
+      <button id="today-btn" class="btn-text">Today</button>
+    </div>
+    <p id="entry-status" class="muted small"></p>
+  </header>
+
+  <main>
+    <!-- Sleep & nutrition -->
+    <section class="card">
+      <h2>Sleep &amp; nutrition</h2>
+
+      <div class="field">
+        <label>Sleep hours</label>
+        <div class="pill-group" data-field="sleep_hours">
+          <button type="button" class="pill" data-value="6">6h</button>
+          <button type="button" class="pill" data-value="7">7h</button>
+          <button type="button" class="pill" data-value="8">8h</button>
+          <button type="button" class="pill" data-value="9">9h</button>
+          <button type="button" class="pill" data-value="10">10h</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Sleep quality <span class="hint">(1 = poor, 5 = excellent)</span></label>
+        <div class="pill-group" data-field="sleep_quality">
+          <button type="button" class="pill" data-value="1">1</button>
+          <button type="button" class="pill" data-value="2">2</button>
+          <button type="button" class="pill" data-value="3">3</button>
+          <button type="button" class="pill" data-value="4">4</button>
+          <button type="button" class="pill" data-value="5">5</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="steps-input">Steps</label>
+        <input type="number" id="steps-input" min="0" step="1" inputmode="numeric" placeholder="e.g. 8000" />
+      </div>
+
+      <div class="field">
+        <label>Food quality</label>
+        <div class="radio-list" data-field="food_quality">
+          <div class="radio-row" data-value="ultra_healthy" tabindex="0"><span class="dot"></span>Ultra healthy</div>
+          <div class="radio-row" data-value="healthy" tabindex="0"><span class="dot"></span>Healthy</div>
+          <div class="radio-row" data-value="small_unhealthy_snack" tabindex="0"><span class="dot"></span>Small unhealthy snack</div>
+          <div class="radio-row" data-value="big_unhealthy" tabindex="0"><span class="dot"></span>Big unhealthy meal</div>
+          <div class="radio-row" data-value="multiple_unhealthy" tabindex="0"><span class="dot"></span>Multiple unhealthy meals</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Knee -->
+    <section class="card">
+      <h2>Knee</h2>
+
+      <div class="field">
+        <label>Knee swelling</label>
+        <div class="radio-list" data-field="knee_swollen">
+          <div class="radio-row" data-value="none" tabindex="0"><span class="dot"></span>None</div>
+          <div class="radio-row" data-value="slightly" tabindex="0"><span class="dot"></span>Slightly</div>
+          <div class="radio-row" data-value="moderate" tabindex="0"><span class="dot"></span>Moderate</div>
+          <div class="radio-row" data-value="extremely" tabindex="0"><span class="dot"></span>Extremely</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="knee-status-input">Knee status</label>
+        <input type="text" id="knee-status-input" placeholder="e.g. stable, sore, improving" />
+      </div>
+
+      <div class="field">
+        <label for="knee-issues-input">Issues with knee</label>
+        <textarea id="knee-issues-input" rows="2"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Rehab done as planned</label>
+        <div class="pill-group" data-field="rehab_done">
+          <button type="button" class="pill" data-value="true">Yes</button>
+          <button type="button" class="pill" data-value="false">No</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="exercises-done-input">Exercises done</label>
+        <textarea id="exercises-done-input" rows="2"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="exercise-note-input">Exercise note</label>
+        <textarea id="exercise-note-input" rows="2"></textarea>
+      </div>
+
+      <div class="field">
+        <label>Progress since last week</label>
+        <div class="radio-list" data-field="progress_last_week">
+          <div class="radio-row" data-value="yes" tabindex="0"><span class="dot"></span>Yes</div>
+          <div class="radio-row" data-value="worse" tabindex="0"><span class="dot"></span>Worse</div>
+          <div class="radio-row" data-value="same" tabindex="0"><span class="dot"></span>Same</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Activity & workout -->
+    <section class="card">
+      <h2>Activity &amp; workout</h2>
+
+      <div class="field">
+        <label for="workout-input">Workout</label>
+        <input type="text" id="workout-input" placeholder="e.g. run 5k, gym, rest day" />
+      </div>
+
+      <div class="field">
+        <label>Workout strain / intensity <span class="slider-value" id="workout_strain-value">–</span></label>
+        <input type="range" class="slider" id="workout_strain-slider" data-field="workout_strain" min="0" max="10" step="1" value="0" />
+      </div>
+
+      <div class="field">
+        <label>Work hours <span class="slider-value" id="work_hours-value">–</span></label>
+        <input type="range" class="slider" id="work_hours-slider" data-field="work_hours" min="0" max="12" step="0.5" value="0" />
+      </div>
+
+      <div class="field">
+        <label>School hours <span class="slider-value" id="school_hours-value">–</span></label>
+        <input type="range" class="slider" id="school_hours-slider" data-field="school_hours" min="0" max="12" step="0.5" value="0" />
+      </div>
+
+      <div class="field">
+        <label>Hours of sitting <span class="slider-value" id="sitting_hours-value">–</span></label>
+        <input type="range" class="slider" id="sitting_hours-slider" data-field="sitting_hours" min="0" max="12" step="0.5" value="0" />
+      </div>
+    </section>
+
+    <!-- Other pain -->
+    <section class="card">
+      <h2>Other pain</h2>
+
+      <div class="field">
+        <label>Hamstring pain <span class="slider-value" id="hamstring_pain-value">–</span></label>
+        <input type="range" class="slider" id="hamstring_pain-slider" data-field="hamstring_pain" min="0" max="10" step="1" value="0" />
+      </div>
+
+      <div class="field">
+        <label>Wrist pain <span class="slider-value" id="wrist_pain-value">–</span></label>
+        <input type="range" class="slider" id="wrist_pain-slider" data-field="wrist_pain" min="0" max="10" step="1" value="0" />
+      </div>
+
+      <div class="field">
+        <label for="other-pain-input">Other injuries / pain</label>
+        <textarea id="other-pain-input" rows="2"></textarea>
+      </div>
+    </section>
+
+    <div class="save-row">
+      <button id="save-btn" class="btn-primary">Save entry</button>
+      <p id="save-status" class="muted small"></p>
+    </div>
+
+    <!-- Export -->
+    <section class="card">
+      <h2>Export data</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="export-start">From</label>
+          <input type="date" id="export-start" />
+        </div>
+        <div class="field">
+          <label for="export-end">To</label>
+          <input type="date" id="export-end" />
+        </div>
+      </div>
+      <button id="export-btn" class="btn-secondary full-width">Download CSV</button>
+      <p id="export-status" class="muted small"></p>
+    </section>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

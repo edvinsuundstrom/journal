@@ -182,7 +182,7 @@ its own:
 - **Wrist pain**: a 0–10 slider, matching hamstring pain's scale.
 - **Knee status**: a short single-line text field; **Issues with knee**: a
   multi-line text area, for more detail.
-- **Work / school / sitting hours**: sliders in half-hour steps (0–12).
+- **Work / school hours**: sliders in half-hour steps (0–12).
 
 ## Ideas for later (not built yet)
 

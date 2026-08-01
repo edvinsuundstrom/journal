@@ -34,12 +34,16 @@ create table if not exists public.journal_entries (
   workout_strain numeric,
   work_hours numeric,
   school_hours numeric,
-  sitting_hours numeric,
 
   -- Other pain
   hamstring_pain numeric,
   wrist_pain numeric,
   other_pain text,
+
+  -- Overall wellbeing
+  overall_physical_status numeric,
+  overall_stress numeric,
+  mood_during_day numeric,
 
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -85,3 +89,13 @@ create policy "Update own entries"
 create policy "Delete own entries"
   on public.journal_entries for delete
   using (auth.uid() = user_id);
+
+-- ----------------------------------------------------------------------------
+-- Migration: if you already ran this file once and created the table before
+-- these three columns existed, run just this block instead (it's harmless to
+-- run even on a brand-new table, since "if not exists" skips columns that
+-- are already there).
+-- ----------------------------------------------------------------------------
+alter table public.journal_entries add column if not exists overall_physical_status numeric;
+alter table public.journal_entries add column if not exists overall_stress numeric;
+alter table public.journal_entries add column if not exists mood_during_day numeric;

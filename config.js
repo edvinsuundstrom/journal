@@ -9,4 +9,4 @@
 // See README.md for the full setup walkthrough.
 
 const SUPABASE_URL = "https://dmxzgebltbzrvkbqcztg.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRteHpnZWJsdGJ6cnZrYnFjenRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1NDUxMTIsImV4cCI6MjEwMTEyMTExMn0.a0cVfkwdUrKRygpA6Qtm2_lzM8a-I1MOnC16-7TkLkc";
+const SUPABASE_ANON_KEY = "sb_publishable_N3saXcLl9BnoW5Yjmkx-6Q_5G8Mjphk";

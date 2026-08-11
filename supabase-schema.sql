@@ -99,3 +99,12 @@ create policy "Delete own entries"
 alter table public.journal_entries add column if not exists overall_physical_status numeric;
 alter table public.journal_entries add column if not exists overall_stress numeric;
 alter table public.journal_entries add column if not exists mood_during_day numeric;
+
+-- ----------------------------------------------------------------------------
+-- Table grants: separate from Row Level Security. Postgres checks these
+-- first — without them, even a logged-in ("authenticated") user gets
+-- "permission denied for table", regardless of what the RLS policies above
+-- say. RLS then narrows it down further to "only your own rows".
+-- ----------------------------------------------------------------------------
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on public.journal_entries to anon, authenticated;

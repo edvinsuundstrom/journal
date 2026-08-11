@@ -1,7 +1,8 @@
 # Recovery Journal
 
-A small personal journal for tracking sleep, knee recovery, activity, and pain
-— one entry per day, filled in whenever you have a spare minute. Runs as a
+A small personal app with two tabs: a daily **Journal** for sleep, knee
+recovery, activity, and pain, and a **Workouts** tab for logging exercises,
+sets, and weights with automatic 1RM and personal-record tracking. Runs as a
 static site on GitHub Pages, with [Supabase](https://supabase.com) as the
 database.
 
@@ -35,11 +36,13 @@ you dive in:
 
 | File | Purpose |
 |---|---|
-| `index.html` | Page structure (login screen + journal form) |
+| `index.html` | Page structure (login screen + Journal tab + Workouts tab) |
 | `style.css` | Light theme, layout, responsive rules |
-| `app.js` | All app logic: auth, loading/saving entries, CSV export |
+| `app.js` | Journal logic: auth, loading/saving entries, CSV export, tab switching |
+| `workouts.js` | Workouts logic: exercise library, sessions, sets, 1RM, PRs, CSV export |
 | `config.js` | Where you paste your own Supabase URL + anon key |
-| `supabase-schema.sql` | Creates the database table and its security rules |
+| `supabase-schema.sql` | Creates the `journal_entries` table and its security rules |
+| `supabase-schema-workouts.sql` | Creates the four workout tables and their security rules |
 
 ## Setup, step by step
 
@@ -52,7 +55,7 @@ you dive in:
    for it once).
 3. Wait about a minute for the project to finish provisioning.
 
-### 2. Create the database table
+### 2. Create the database tables
 
 1. In your new project, open **SQL Editor** in the left sidebar.
 2. Click **New query**.
@@ -60,6 +63,10 @@ you dive in:
    and paste them into the query editor.
 4. Click **Run**. You should see "Success. No rows returned." This has
    created the `journal_entries` table along with its security rules.
+5. Click **New query** again, and repeat steps 3–4 with
+   `supabase-schema-workouts.sql`. This creates the four tables the
+   Workouts tab uses (`exercises`, `workout_sessions`, `session_exercises`,
+   `exercise_sets`).
 
 ### 3. Create your login (no public sign-up)
 
@@ -139,18 +146,44 @@ for quick access — it'll open full-screen like a regular app.
 
 ## How it works
 
+**Journal tab**
 - **One row per day**: every save is an upsert keyed on (your user id, the
   selected date). Open the journal in the morning and log sleep; open it
-  again at night and log the knee/workout fields — both saves land on the
-  same row instead of creating duplicates.
+  again at night and log the knee fields — both saves land on the same row
+  instead of creating duplicates.
 - **Partial entries are fine**: fields you haven't touched are saved as
   empty rather than as a default value like 0, so a pain slider you never
   touched today is stored as "no answer," not "no pain."
 - **Date navigation**: the ‹ › arrows and the date field at the top move
   between days; the form reloads whatever was saved for that day (or a
   blank form if nothing was saved yet).
+- **Save section buttons**: each card has its own Save button for
+  convenience, but every one of them saves the whole day's entry (not just
+  that card) — that's what keeps a same-day upsert from wiping out fields
+  you saved earlier from a different card.
 - **Export**: pick a From/To date under "Export data" and click "Download
   CSV" to get a spreadsheet-ready file of everything in that range.
+
+**Workouts tab**
+- **Exercise library**: type a new exercise name once and it's remembered —
+  after that it autocompletes from a dropdown.
+- **One session per day**: like the journal, keyed on (user, date). A
+  session is created automatically the first time you add an exercise, or
+  the first time you set a category.
+- **Sets are individual rows**: each set auto-saves as you type (with a
+  short debounce so it doesn't save on every keystroke), and removing a set
+  deletes that row outright rather than leaving a blank one behind. An
+  exercise with zero sets left is removed from the session automatically.
+- **Prefill from last time**: adding an exercise you've logged before shows
+  your previous session's sets as gray placeholder text — type over a
+  field to change it, or leave it and click elsewhere to accept it as-is.
+- **1RM & PRs**: for "weight + reps" exercises, your estimated one-rep max
+  (Epley formula: `weight × (1 + reps/30)`) is shown live as you type, and
+  a 🏆 badge appears when a set is your best-ever 1RM for that exercise.
+- **Category**: optional, belongs to the whole session (not any one
+  exercise), and can be set any time — before, during, or after logging.
+- **Export**: same idea as the journal — pick a date range, download a CSV
+  with every set, exercise, and session.
 
 ## A note on security
 
@@ -158,10 +191,10 @@ GitHub Pages sites are public on the internet by default (a free GitHub
 account can only publish Pages from a public repository, and even a paid
 plan's "private" Pages site is still reachable by anyone with the URL) — so
 the sign-in screen is doing real work here, not just decoration. Because
-the table uses Row Level Security tied to your logged-in user, someone who
-finds your URL and even reads the anon key out of the page source still
-cannot see or modify your entries without your password. Two things worth
-keeping in mind:
+every table uses Row Level Security tied to your logged-in user, someone
+who finds your URL and even reads the anon key out of the page source
+still cannot see or modify your entries without your password. Two things
+worth keeping in mind:
 
 - Choose a real password for the user you created in step 3 — it's the one
   thing standing between your entries and the public internet.
@@ -173,16 +206,19 @@ keeping in mind:
 A few of the fields you listed didn't specify an exact input type or scale,
 so reasonable defaults were picked. All of these are quick to change if you
 want something different — the code is organized so each field's markup
-(`index.html`), styling (`style.css`), and logic (`app.js`) can be edited on
-its own:
+(`index.html`), styling (`style.css`), and logic (`app.js` / `workouts.js`)
+can be edited on its own:
 
 - **Sleep quality**: a 1–5 scale (no scale was specified).
-- **Workout**: a free-text field (e.g. "run 5k", "gym", "rest day"), since
-  intensity is captured separately.
 - **Wrist pain**: a 0–10 slider, matching hamstring pain's scale.
 - **Knee status**: a short single-line text field; **Issues with knee**: a
   multi-line text area, for more detail.
-- **Work / school hours**: sliders in half-hour steps (0–12).
+- **Workout tracking types**: limited to four combinations — reps, weight +
+  reps, time, and weight + time — covering most gym and bodyweight
+  exercises without an unwieldy number of choices.
+- **Session category options**: a fixed list (chest, back, legs, shoulders,
+  arms, core, cardio, full body, other). Easy to edit in the `<select>` in
+  `index.html` if you'd rather have different categories.
 
 ## Ideas for later (not built yet)
 

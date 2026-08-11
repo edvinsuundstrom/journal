@@ -8,5 +8,5 @@
 // the schema in supabase-schema.sql restricts every row to its owner.
 // See README.md for the full setup walkthrough.
 
-const SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
-const SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
+const SUPABASE_URL = "https://dmxzgebltbzrvkbqcztg.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRteHpnZWJsdGJ6cnZrYnFjenRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU1NDUxMTIsImV4cCI6MjEwMTEyMTExMn0.a0cVfkwdUrKRygpA6Qtm2_lzM8a-I1MOnC16-7TkLkc";

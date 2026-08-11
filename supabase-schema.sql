@@ -29,18 +29,14 @@ create table if not exists public.journal_entries (
   exercise_note text,
   progress_last_week text,
 
-  -- Activity & workout
-  workout text,
-  workout_strain numeric,
-  work_hours numeric,
-  school_hours numeric,
-
   -- Other pain
   hamstring_pain numeric,
   wrist_pain numeric,
   other_pain text,
 
   -- Overall wellbeing
+  work_hours numeric,
+  school_hours numeric,
   overall_physical_status numeric,
   overall_stress numeric,
   mood_during_day numeric,
@@ -108,3 +104,12 @@ alter table public.journal_entries add column if not exists mood_during_day nume
 -- ----------------------------------------------------------------------------
 grant usage on schema public to anon, authenticated;
 grant select, insert, update, delete on public.journal_entries to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- Migration: workout tracking moved to its own set of tables (see
+-- supabase-schema-workouts.sql), so these two columns are no longer used by
+-- the journal. If you already created the table before this change, run
+-- just this block to drop them and match the current app.
+-- ----------------------------------------------------------------------------
+alter table public.journal_entries drop column if exists workout;
+alter table public.journal_entries drop column if exists workout_strain;

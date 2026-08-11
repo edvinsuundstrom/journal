@@ -55,7 +55,6 @@ const exportStatus = document.getElementById("export-status");
 // Slider fields need special handling (see NOTE below), so list them once here.
 const SLIDER_FIELDS = [
   "sleep_hours",
-  "workout_strain",
   "work_hours",
   "school_hours",
   "hamstring_pain",
@@ -129,7 +128,28 @@ async function enterApp(user) {
   exportEndInput.value = currentDate;
 
   await loadEntryForDate(currentDate);
+
+  // workouts.js defines this once it's loaded; it sets up the Workouts tab
+  // (exercise list, today's session, etc.) the first time you sign in.
+  if (typeof initWorkoutsPage === "function") {
+    initWorkoutsPage(user);
+  }
 }
+
+// ---------------------------------------------------------------------------
+// Tab switching (Journal <-> Workouts)
+// ---------------------------------------------------------------------------
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    const targetId = btn.dataset.tab;
+    document.querySelectorAll(".page").forEach((page) => {
+      page.hidden = page.id !== targetId;
+    });
+  });
+});
 
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -290,7 +310,6 @@ function collectFormData() {
   row.knee_issues = emptyToNull(document.getElementById("knee-issues-input").value);
   row.exercises_done = emptyToNull(document.getElementById("exercises-done-input").value);
   row.exercise_note = emptyToNull(document.getElementById("exercise-note-input").value);
-  row.workout = emptyToNull(document.getElementById("workout-input").value);
   row.other_pain = emptyToNull(document.getElementById("other-pain-input").value);
 
   return row;
@@ -344,7 +363,6 @@ function populateForm(data) {
   document.getElementById("knee-issues-input").value = data.knee_issues ?? "";
   document.getElementById("exercises-done-input").value = data.exercises_done ?? "";
   document.getElementById("exercise-note-input").value = data.exercise_note ?? "";
-  document.getElementById("workout-input").value = data.workout ?? "";
   document.getElementById("other-pain-input").value = data.other_pain ?? "";
 }
 
@@ -366,22 +384,23 @@ function resetForm() {
     "knee-issues-input",
     "exercises-done-input",
     "exercise-note-input",
-    "workout-input",
     "other-pain-input",
   ].forEach((id) => (document.getElementById(id).value = ""));
 }
 
 function setPillValue(field, value) {
   const group = document.querySelector(`.pill-group[data-field="${field}"]`);
+  const hasValue = value !== null && value !== undefined && value !== "";
   group.querySelectorAll(".pill").forEach((p) => {
-    p.classList.toggle("active", value !== null && p.dataset.value === String(value));
+    p.classList.toggle("active", hasValue && p.dataset.value === String(value));
   });
 }
 
 function setRadioValue(field, value) {
   const list = document.querySelector(`.radio-list[data-field="${field}"]`);
+  const hasValue = value !== null && value !== undefined && value !== "";
   list.querySelectorAll(".radio-row").forEach((r) => {
-    r.classList.toggle("active", value !== null && r.dataset.value === value);
+    r.classList.toggle("active", hasValue && r.dataset.value === value);
   });
 }
 
@@ -445,8 +464,6 @@ const CSV_COLUMNS = [
   ["exercises_done", "Exercises done"],
   ["exercise_note", "Exercise note"],
   ["progress_last_week", "Progress since last week"],
-  ["workout", "Workout"],
-  ["workout_strain", "Workout strain"],
   ["work_hours", "Work hours"],
   ["school_hours", "School hours"],
   ["hamstring_pain", "Hamstring pain"],

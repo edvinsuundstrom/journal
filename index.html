@@ -37,6 +37,14 @@
       <button id="logout-btn" class="btn-text">Sign out</button>
     </div>
 
+    <div class="tab-nav">
+      <button type="button" class="tab-btn active" data-tab="journal-page">Journal</button>
+      <button type="button" class="tab-btn" data-tab="workouts-page">Workouts</button>
+    </div>
+  </header>
+
+  <!-- ===================== JOURNAL PAGE ===================== -->
+  <main id="journal-page" class="page">
     <div class="date-nav">
       <button id="prev-day" class="btn-icon" aria-label="Previous day">‹</button>
       <input type="date" id="date-input" />
@@ -44,9 +52,7 @@
       <button id="today-btn" class="btn-text">Today</button>
     </div>
     <p id="entry-status" class="muted small"></p>
-  </header>
 
-  <main>
     <!-- Sleep & nutrition -->
     <section class="card">
       <h2>Sleep &amp; nutrition</h2>
@@ -146,19 +152,9 @@
       </div>
     </section>
 
-    <!-- Activity & workout -->
+    <!-- Overall wellbeing -->
     <section class="card">
-      <h2>Activity &amp; workout</h2>
-
-      <div class="field">
-        <label for="workout-input">Workout</label>
-        <input type="text" id="workout-input" placeholder="e.g. run 5k, gym, rest day" />
-      </div>
-
-      <div class="field">
-        <label>Workout strain / intensity <span class="slider-value" id="workout_strain-value">–</span></label>
-        <input type="range" class="slider" id="workout_strain-slider" data-field="workout_strain" min="0" max="10" step="1" value="0" />
-      </div>
+      <h2>Overall wellbeing</h2>
 
       <div class="field">
         <label>Work hours <span class="slider-value" id="work_hours-value">–</span></label>
@@ -169,16 +165,6 @@
         <label>School hours <span class="slider-value" id="school_hours-value">–</span></label>
         <input type="range" class="slider" id="school_hours-slider" data-field="school_hours" min="0" max="12" step="0.5" value="0" />
       </div>
-
-      <div class="section-save-row">
-        <button type="button" class="btn-secondary section-save-btn">Save section</button>
-        <span class="section-save-status muted small"></span>
-      </div>
-    </section>
-
-    <!-- Overall wellbeing -->
-    <section class="card">
-      <h2>Overall wellbeing</h2>
 
       <div class="field">
         <label>Overall physical status <span class="slider-value" id="overall_physical_status-value">–</span></label>
@@ -243,10 +229,86 @@
       <p id="export-status" class="muted small"></p>
     </section>
   </main>
+
+  <!-- ===================== WORKOUTS PAGE ===================== -->
+  <div id="workouts-page" class="page" hidden>
+    <div class="date-nav">
+      <button id="w-prev-day" class="btn-icon" aria-label="Previous day">‹</button>
+      <input type="date" id="w-date-input" />
+      <button id="w-next-day" class="btn-icon" aria-label="Next day">›</button>
+      <button id="w-today-btn" class="btn-text">Today</button>
+    </div>
+    <p id="session-status" class="muted small"></p>
+
+    <!-- Add exercise -->
+    <section class="card">
+      <h2>Add exercise</h2>
+
+      <div class="field">
+        <label for="exercise-name-input">Exercise</label>
+        <input type="text" id="exercise-name-input" list="exercise-options" placeholder="e.g. Bench press" autocomplete="off" />
+        <datalist id="exercise-options"></datalist>
+      </div>
+
+      <div class="field">
+        <label>Tracking type</label>
+        <div class="pill-group" id="tracking-type-group" data-field="tracking_type">
+          <button type="button" class="pill" data-value="reps">Reps</button>
+          <button type="button" class="pill" data-value="weight_reps">Weight + reps</button>
+          <button type="button" class="pill" data-value="time">Time</button>
+          <button type="button" class="pill" data-value="weight_time">Weight + time</button>
+        </div>
+      </div>
+
+      <button type="button" id="add-exercise-btn" class="btn-primary full-width">Add exercise to session</button>
+      <p id="add-exercise-status" class="muted small"></p>
+    </section>
+
+    <!-- Exercises added to this session render here -->
+    <div id="session-exercises-list"></div>
+
+    <!-- Session category -->
+    <section class="card">
+      <h2>Session category <span class="hint">(optional — fill in whenever)</span></h2>
+      <div class="field">
+        <select id="session-category-select">
+          <option value="">— none —</option>
+          <option value="chest">Chest</option>
+          <option value="back">Back</option>
+          <option value="legs">Legs</option>
+          <option value="shoulders">Shoulders</option>
+          <option value="arms">Arms</option>
+          <option value="core">Core</option>
+          <option value="cardio">Cardio</option>
+          <option value="full_body">Full body</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <p id="category-status" class="muted small"></p>
+    </section>
+
+    <!-- Export -->
+    <section class="card">
+      <h2>Export workouts</h2>
+      <div class="field-row">
+        <div class="field">
+          <label for="w-export-start">From</label>
+          <input type="date" id="w-export-start" />
+        </div>
+        <div class="field">
+          <label for="w-export-end">To</label>
+          <input type="date" id="w-export-end" />
+        </div>
+      </div>
+      <button type="button" id="w-export-btn" class="btn-secondary full-width">Download CSV</button>
+      <p id="w-export-status" class="muted small"></p>
+    </section>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
+<script src="workouts.js"></script>
 </body>
 </html>

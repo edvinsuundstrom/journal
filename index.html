@@ -267,22 +267,21 @@
     <!-- Exercises added to this session render here -->
     <div id="session-exercises-list"></div>
 
-    <!-- Session category -->
+    <!-- Session categories -->
     <section class="card">
-      <h2>Session category <span class="hint">(optional — fill in whenever)</span></h2>
+      <h2>Session categories <span class="hint">(optional — select all that apply, any time)</span></h2>
       <div class="field">
-        <select id="session-category-select">
-          <option value="">— none —</option>
-          <option value="chest">Chest</option>
-          <option value="back">Back</option>
-          <option value="legs">Legs</option>
-          <option value="shoulders">Shoulders</option>
-          <option value="arms">Arms</option>
-          <option value="core">Core</option>
-          <option value="cardio">Cardio</option>
-          <option value="full_body">Full body</option>
-          <option value="other">Other</option>
-        </select>
+        <div class="pill-group multi-select" id="session-categories-group">
+          <button type="button" class="pill" data-value="cardio">Cardio</button>
+          <button type="button" class="pill" data-value="quad">Quad</button>
+          <button type="button" class="pill" data-value="hamstring">Hamstring</button>
+          <button type="button" class="pill" data-value="calf">Calf</button>
+          <button type="button" class="pill" data-value="back">Back</button>
+          <button type="button" class="pill" data-value="bicep">Bicep</button>
+          <button type="button" class="pill" data-value="tricep">Tricep</button>
+          <button type="button" class="pill" data-value="chest">Chest</button>
+          <button type="button" class="pill" data-value="core">Core</button>
+        </div>
       </div>
       <p id="category-status" class="muted small"></p>
     </section>

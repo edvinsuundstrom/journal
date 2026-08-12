@@ -8,9 +8,9 @@
 -- Four tables:
 --   exercises          your reusable exercise library (created once, picked
 --                      from a dropdown every time after that)
---   workout_sessions   one row per date you log a workout; "category" is
---                      optional and belongs to the whole session, not to any
---                      one exercise
+--   workout_sessions   one row per date you log a workout; "categories" is
+--                      optional, can hold more than one value, and belongs
+--                      to the whole session, not to any one exercise
 --   session_exercises  which exercises were done in a given session, and how
 --                      each is tracked (reps / weight+reps / time / weight+time)
 --   exercise_sets      each individual set as its own row — this is what
@@ -30,7 +30,7 @@ create table if not exists public.workout_sessions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   session_date date not null,
-  category text, -- optional, filled in whenever — belongs to the session
+  categories text[], -- optional, multiple allowed, filled in whenever — belongs to the session
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id, session_date)
@@ -124,3 +124,11 @@ grant select, insert, update, delete on public.exercises to anon, authenticated;
 grant select, insert, update, delete on public.workout_sessions to anon, authenticated;
 grant select, insert, update, delete on public.session_exercises to anon, authenticated;
 grant select, insert, update, delete on public.exercise_sets to anon, authenticated;
+
+-- ----------------------------------------------------------------------------
+-- Migration: categories changed from a single text value to a list (you can
+-- now select more than one per session), stored as a Postgres text array.
+-- If you already ran this file before this change, run just this block.
+-- ----------------------------------------------------------------------------
+alter table public.workout_sessions add column if not exists categories text[];
+alter table public.workout_sessions drop column if exists category;

@@ -234,7 +234,7 @@ async function loadEntryForDate(dateStr) {
 // Clicking an already-active one clears the selection (useful since you may
 // not have an answer yet for every field every time you open the journal).
 // ---------------------------------------------------------------------------
-document.querySelectorAll(".pill-group").forEach((group) => {
+document.querySelectorAll(".pill-group:not(.multi-select)").forEach((group) => {
   group.addEventListener("click", (e) => {
     const btn = e.target.closest(".pill");
     if (!btn) return;

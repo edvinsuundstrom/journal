@@ -53,7 +53,7 @@ const addExerciseStatus = document.getElementById("add-exercise-status");
 
 const sessionExercisesList = document.getElementById("session-exercises-list");
 
-const sessionCategorySelect = document.getElementById("session-category-select");
+const sessionCategoriesGroup = document.getElementById("session-categories-group");
 const categoryStatus = document.getElementById("category-status");
 
 const wExportStartInput = document.getElementById("w-export-start");
@@ -174,14 +174,20 @@ async function loadWorkoutSession(dateStr) {
 
   if (session) {
     currentSessionId = session.id;
-    sessionCategorySelect.value = session.category || "";
+    setCategoryPills(session.categories || []);
     sessionStatus.textContent = `Session for ${formatDateLong(dateStr)}`;
     await loadSessionExercises();
   } else {
     currentSessionId = null;
-    sessionCategorySelect.value = "";
+    setCategoryPills([]);
     sessionStatus.textContent = `No session yet for ${formatDateLong(dateStr)} — add an exercise to start one`;
   }
+}
+
+function setCategoryPills(categories) {
+  sessionCategoriesGroup.querySelectorAll(".pill").forEach((p) => {
+    p.classList.toggle("active", categories.includes(p.dataset.value));
+  });
 }
 
 async function loadSessionExercises() {
@@ -363,10 +369,17 @@ function renderExerciseCard(entry) {
       <button type="button" class="btn-icon remove-exercise-btn" aria-label="Remove exercise">×</button>
     </div>
     <div class="sets-list"></div>
-    <button type="button" class="btn-secondary add-set-btn full-width">+ Add set</button>
+    <div class="set-actions-row">
+      <button type="button" class="btn-secondary add-set-btn">+ Add set</button>
+      <button type="button" class="btn-secondary duplicate-set-btn">⧉ Duplicate last set</button>
+    </div>
     <div class="field">
       <label>Note</label>
       <textarea class="exercise-note-textarea" rows="2" placeholder="optional note"></textarea>
+    </div>
+    <div class="section-save-row">
+      <button type="button" class="btn-primary save-exercise-btn">Save exercise</button>
+      <span class="section-save-status muted small"></span>
     </div>
   `;
   entry.cardEl = card;
@@ -381,8 +394,74 @@ function renderExerciseCard(entry) {
 
   card.querySelector(".remove-exercise-btn").addEventListener("click", () => removeExercise(entry));
   card.querySelector(".add-set-btn").addEventListener("click", () => addSetRow(entry, null, null));
+  card.querySelector(".duplicate-set-btn").addEventListener("click", () => duplicateLastSet(entry));
+  card.querySelector(".save-exercise-btn").addEventListener("click", () => saveWholeExercise(entry, card));
 
   sessionExercisesList.appendChild(card);
+}
+
+// ---------------------------------------------------------------------------
+// Explicit "Save exercise" button — saves every set row (accepting any
+// still-gray placeholder values first) plus the note, and does a real
+// upsert (insert if a set has never been saved, update if it has) exactly
+// like the automatic per-keystroke save does. This exists for the same
+// reason the journal has "Save section" buttons: a visible, reliable way to
+// save on demand rather than only relying on auto-save happening quietly in
+// the background.
+// ---------------------------------------------------------------------------
+async function saveWholeExercise(entry, card) {
+  const btn = card.querySelector(".save-exercise-btn");
+  const statusEl = card.querySelector(".section-save-status");
+  btn.disabled = true;
+  statusEl.textContent = "Saving…";
+
+  const rowEls = Array.from(entry.setsListEl.querySelectorAll(".set-row"));
+  for (const rowEl of rowEls) {
+    rowEl.querySelectorAll("input").forEach((input) => {
+      if (input.value === "" && input.dataset.prefill) {
+        input.value = input.dataset.prefill;
+      }
+    });
+    updateLiveOneRepMax(entry, rowEl);
+    await persistSet(entry, rowEl.rowState, rowEl);
+  }
+
+  const noteInput = card.querySelector(".exercise-note-textarea");
+  await sb.from(SESSION_EXERCISES_TABLE).update({ notes: noteInput.value || null }).eq("id", entry.id);
+
+  btn.disabled = false;
+  const now = new Date();
+  statusEl.textContent = `Saved ✓ at ${now.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
+}
+
+// ---------------------------------------------------------------------------
+// Duplicate the last set row (whatever it currently shows — typed values or
+// an accepted placeholder) into a brand-new set, saved immediately. This is
+// the fast path for "same weight, one more set."
+// ---------------------------------------------------------------------------
+function duplicateLastSet(entry) {
+  const rowEls = entry.setsListEl.querySelectorAll(".set-row");
+  if (rowEls.length === 0) return;
+  const lastRowEl = rowEls[rowEls.length - 1];
+
+  const fields = fieldConfigFor(entry.tracking_type);
+  const valuesToCopy = {};
+  fields.forEach((f) => {
+    const input = lastRowEl.querySelector(`[data-key="${f.key}"]`);
+    valuesToCopy[f.key] = input.value !== "" ? input.value : input.dataset.prefill || "";
+  });
+
+  const { row } = addSetRow(entry, null, null);
+  fields.forEach((f) => {
+    if (valuesToCopy[f.key] !== "") {
+      row.querySelector(`[data-key="${f.key}"]`).value = valuesToCopy[f.key];
+    }
+  });
+  updateLiveOneRepMax(entry, row);
+  persistSet(entry, row.rowState, row); // save right away, no need to wait for the debounce
 }
 
 async function removeExercise(entry) {
@@ -457,6 +536,7 @@ function addSetRow(entry, existingSet, prefillSet) {
 
   entry.setsListEl.appendChild(row);
   entry.setRows.push(rowState);
+  row.rowState = rowState; // let callers (Save button, Duplicate) find this row's state directly
 
   const oneRepMaxLabel = row.querySelector(".one-rep-max");
   if (existingSet && existingSet.one_rep_max != null && oneRepMaxLabel) {
@@ -484,6 +564,8 @@ function addSetRow(entry, existingSet, prefillSet) {
   row.querySelector(".remove-set-btn").addEventListener("click", () => removeSet(entry, rowState, row));
 
   updateLiveOneRepMax(entry, row);
+
+  return { row, rowState };
 }
 
 function updateLiveOneRepMax(entry, row) {
@@ -578,17 +660,29 @@ async function removeSet(entry, rowState, row) {
 }
 
 // ---------------------------------------------------------------------------
-// Session category (optional, set any time)
+// Session categories (optional, multi-select, set any time)
+// Clicking a pill toggles just that one — unlike the exclusive pill-groups
+// elsewhere, any number of categories can be active at once.
 // ---------------------------------------------------------------------------
-sessionCategorySelect.addEventListener("change", async () => {
-  const value = sessionCategorySelect.value || null;
+sessionCategoriesGroup.addEventListener("click", async (e) => {
+  const btn = e.target.closest(".pill");
+  if (!btn) return;
+  btn.classList.toggle("active");
+  await saveCategories();
+});
+
+async function saveCategories() {
+  const active = Array.from(sessionCategoriesGroup.querySelectorAll(".pill.active")).map(
+    (p) => p.dataset.value
+  );
+  const value = active.length > 0 ? active : null;
   categoryStatus.textContent = "Saving…";
 
   if (!currentSessionId) {
     const { data, error } = await sb
       .from(SESSIONS_TABLE)
       .upsert(
-        { user_id: currentUser.id, session_date: currentWorkoutDate, category: value },
+        { user_id: currentUser.id, session_date: currentWorkoutDate, categories: value },
         { onConflict: "user_id,session_date" }
       )
       .select()
@@ -600,14 +694,14 @@ sessionCategorySelect.addEventListener("change", async () => {
     currentSessionId = data.id;
     sessionStatus.textContent = `Session for ${formatDateLong(currentWorkoutDate)}`;
   } else {
-    const { error } = await sb.from(SESSIONS_TABLE).update({ category: value }).eq("id", currentSessionId);
+    const { error } = await sb.from(SESSIONS_TABLE).update({ categories: value }).eq("id", currentSessionId);
     if (error) {
       categoryStatus.textContent = "Couldn't save: " + error.message;
       return;
     }
   }
   categoryStatus.textContent = "Saved ✓";
-});
+}
 
 // ---------------------------------------------------------------------------
 // CSV export
@@ -625,7 +719,7 @@ wExportBtn.addEventListener("click", async () => {
 
   const { data: sessions, error: sessionsError } = await sb
     .from(SESSIONS_TABLE)
-    .select("id, session_date, category")
+    .select("id, session_date, categories")
     .eq("user_id", currentUser.id)
     .gte("session_date", start)
     .lte("session_date", end);
@@ -668,7 +762,7 @@ wExportBtn.addEventListener("click", async () => {
 
   const columns = [
     "Date",
-    "Category",
+    "Categories",
     "Exercise",
     "Tracking type",
     "Set",
@@ -682,7 +776,7 @@ wExportBtn.addEventListener("click", async () => {
     const session = ex ? sessionById[ex.session_id] : null;
     return [
       session ? session.session_date : "",
-      session && session.category ? session.category : "",
+      session && session.categories ? session.categories.join("; ") : "",
       ex ? exerciseNameById[ex.exercise_id] || "" : "",
       ex ? TRACKING_LABELS[ex.tracking_type] || ex.tracking_type : "",
       set.set_number,
